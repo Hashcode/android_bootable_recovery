@@ -7,5 +7,5 @@
 /system         ext3      /dev/block/system                        flags=usermrf
 /osh            ext3      /dev/block/webtop                        flags=display="Webtop";backup=y;usermrf
 /systemorig     auto      /dev/block/mmcblk1p21-orig               flags=hidden;usermrf
-/ss             vfat      /dev/block/mmcblk0p25-orig               flags=hidden
+/ss             ext4      /dev/block/mmcblk0p25-orig               flags=hidden
 
