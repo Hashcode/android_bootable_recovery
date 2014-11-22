@@ -137,6 +137,33 @@ if [ "$RUN_SS" = "1" ]; then
 	fi
 
 	if [ "$ENTER_RECOVERY" = "1" ]; then
+		# check for kexec files
+		if [ -e "$RECOVERY_DIR/kexec/kernel" ]; then
+			$BBX cp $RECOVERY_DIR/ramdisk-recovery.img /
+			$BBX cp $RECOVERY_DIR/kexec/* /
+
+			# unmount SS
+			$BBX umount $SS_MNT
+			if [ "$SS_USE_DATAMEDIA" = "1" ]; then
+				$BBX umount $DATAMEDIA_MNT
+			fi
+			$BBX umount -l /system
+
+			/sbin/hijack.killall
+
+			cd /
+			$BBX chmod 755 /kexec
+			$BBX chown 0.2000 /kexec
+			$BBX insmod /uart.ko
+			$BBX insmod /arm_kexec.ko
+			$BBX insmod /kexec.ko
+			/kexec -l /kernel --devtree=/devtree --ramdisk=/ramdisk-recovery.img
+			$BBX sleep 1
+			/kexec -e
+			exit
+		fi
+
+		# fall back to non-kexec recovery
 		# filesystem cleanup
 		$BBX rm /d
 		$BBX rm /etc
@@ -323,6 +350,11 @@ if [ "$RUN_SS" = "1" ]; then
 		echo "<1>Skip safestrap hijack because of charger mode" > /dev/kmsg
 	fi
 fi
+fi
+
+if [ "$HIJACK_LOC" = "" -o "$HIJACK_BIN" = "" ]; then
+	HIJACK_LOC="bin"
+	HIJACK_BIN="logwrapper"
 fi
 
 # Run current file like expected by the system
